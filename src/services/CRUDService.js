@@ -26,9 +26,6 @@ let createNewUser = async (data) => {
         }
 
     })
-    // console.log("data from service:");
-    // console.log(data);
-    // console.log(hashPasswordFromBcrypt);
 }
 let hashUserPassword = (password) =>{
     return new Promise(async (resolve, reject) => {
@@ -40,7 +37,21 @@ let hashUserPassword = (password) =>{
         }
     })
 }
+let getAllUser = () => {
+    return new Promise(async (resolve, reject) => {
+        try{
+            let users = await db.User.findAll({
+                raw: true,
+            });
+            resolve(users);
+        }catch(e){
+            reject(e);
+        }
+    })
+
+}
 
 module.exports = {
-    createNewUser: createNewUser
+    createNewUser: createNewUser,
+    getAllUser: getAllUser,
 }
