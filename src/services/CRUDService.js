@@ -19,8 +19,10 @@ let createNewUser = async (data) => {
                 // image: data.image
             })
 
-            resolve('ok! create a new user succeed!');
-
+            let allUsers = await db.User.findAll({
+                raw: true
+            });
+            resolve(allUsers);
         }catch(e){
             reject(e);
         }
@@ -94,7 +96,29 @@ let updateUserData = (data) => {
             }
 
         }catch(e){
+            reject(e);
+        }
+    })
+}
 
+let deleteUser = (userId) =>{
+    return new Promise( async (resolve, reject) => {
+        try{
+            await db.User.deleteById(userId);
+            let user = await db.User.findOne({
+                where: {id: userId}
+            })
+            if(user){
+                await user.destroy();
+                let allUsers = await db.User.findAll({
+                    raw: true
+                });
+                resolve(allUsers);
+            }else{
+                resolve();
+            }
+        }catch(e){
+            reject(e);
         }
     })
 }
@@ -103,5 +127,6 @@ module.exports = {
     createNewUser: createNewUser,
     getAllUser: getAllUser,
     getUserInfoById: getUserInfoById,
-    updateUserData: updateUserData
+    updateUserData: updateUserData,
+    deleteUser: deleteUser
 }
