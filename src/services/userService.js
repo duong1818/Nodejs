@@ -1,5 +1,7 @@
 import db from "../models/index";
 import bcrypt from 'bcryptjs';
+const salt = bcrypt.genSaltSync(10);
+
 
 let handleUserLogin = (email,password) => {
     return new Promise(async (resolve, reject) =>{
@@ -41,7 +43,6 @@ let checkUserEmail = (userEmail) => {
                 //     exclude: ['password'],
                 // },
                 where: {email: userEmail},
-                raw: true
             })
             if(user){
                 resolve(user);
@@ -82,7 +83,143 @@ let getAllUsers = (userId) => {
         }
     })
 }
+let createNewUser = (user) => {
+    return new Promise(async (resolve, reject) => {
+        try{
+            //check email is exist?
+            let isExistEmail = await checkUserEmail(user.email);
+            if(isExistEmail){
+                resolve({
+                    errCode: 2,
+                    errMessage: 'Email already exists! please try another email!'    
+                })
+            }
+
+            let hashPasswordFromBcrypt = await hashUserPassword(user.password);
+            await db.User.create({
+                email: user.email,
+                password: hashPasswordFromBcrypt,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                address: user.address,
+                phoneNumber: user.phoneNumber,
+                gender: user.gender === '1' ? true : false,
+                roleId: user.roleId,
+            })
+
+            // let users = await db.User.findAll({
+            //     attributes:{
+            //         exclude: ['password'],
+            //     },
+            // });
+            //console.log('users : ',users);
+            resolve({
+                errCode: 0,
+                errMessage: 'OK'
+            });
+
+
+        }catch(e){
+            reject(e);
+        }
+    })
+}
+
+let hashUserPassword = (password) =>{
+    return new Promise(async (resolve, reject) => {
+        try{
+            let hashPassword = await bcrypt.hashSync(password, salt);
+            resolve(hashPassword);
+        }catch(e){
+            reject(e);
+        }
+    })
+}
+
+let editUser = (data) => {
+    return new Promise(async (resolve,reject) => {
+        try{
+            //check email is exist?
+            let isExistEmail = await checkUserEmail(data.email);
+            if(isExistEmail){
+                resolve({
+                    errCode: 2,
+                    errMessage: 'Email already exists! please try another email!'    
+                })
+            }
+            //let hashPasswordFromBcrypt = await hashUserPassword(user.password);
+
+            let user = await db.User.findOne({
+                where: {id: data.id} 
+            });
+
+            if(!user){
+                resolve({
+                    errCode: 3,
+                    errMessage: 'edit user not found'    
+                })                
+            }
+
+            if(user){
+                await db.User.update(
+                    { 
+                        email: data.email,
+                        firstName: data.firstName,
+                        lastName: data.lastName,
+                        phoneNumber: data.phoneNumber,
+                        address: data.address,
+                        gender: data.gender === '1' ? true : false,
+                        roleId: data.roleId
+                    },
+                    {where: {id: data.id}}
+                );
+
+                resolve({
+                    errCode: 0,
+                    errMessage: 'edit OK'
+                });
+
+            }
+
+        }catch(e){
+            reject(e);
+        }
+    })
+}
+
+let deleteUser = (userId) => {
+    return new Promise ( async (resolve, reject) => {
+        try{
+            let user = await db.User.findOne({
+                where: {id: userId}
+            })
+    
+            if(!user){
+                resolve({
+                    errCode: 2,
+                    errMessage: 'User not found!'
+                })
+            }
+
+            await db.User.destroy({
+                where:{id: userId}
+            })
+
+            resolve({
+                errCode: 0,
+                errMessage: 'Delete user OK!'
+            })
+    
+        }catch(e){
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     handleUserLogin: handleUserLogin,
-    getAllUsers: getAllUsers
+    getAllUsers: getAllUsers,
+    createNewUser: createNewUser,
+    editUser: editUser,
+    deleteUser: deleteUser
 }

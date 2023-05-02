@@ -5,7 +5,7 @@ let handleLogin = async (req,res) => {
     let password = req.body.password;
 
     if(!email || !password){
-        return res.status(500).json({
+        return res.status(400).json({
             errCode: 1,
             message: 'Missing inputs parameter!'
         })
@@ -31,7 +31,7 @@ let handleGetAllUsers = async (req, res) => {
     let id = req.query.id;
 
     if(!id){
-        return res.status(200).json({
+        return res.status(400).json({
             errCode: 1,
             errMessage: 'Missing required parameter',
             users: []
@@ -48,7 +48,66 @@ let handleGetAllUsers = async (req, res) => {
 
 }
 
+let handleCreateNewUser = async (req, res) => {
+    let user = req.body;
+    //console.log('user: ', user);
+
+    if(!user){
+        return res.status(400).json({
+            errCode: 1,
+            errMessage: 'Missing user input data!'
+        })
+    }
+
+    let message = await userService.createNewUser(user);
+
+    console.log('duong check message: ', message);
+
+    return res.status(200).json({
+        message
+    })
+}
+
+let handleEditUser = async (req, res) =>{
+    let user = req.body;
+
+    console.log('duong check input user: ', user);
+
+    if(!user){
+        return res.status(400).json({
+            errCode: 1,
+            errMessage: 'Missing user input data!'
+        })
+    }
+
+    let message = await userService.editUser(user);
+
+    return res.status(200).json({
+        message        
+    })
+}
+
+let handleDeleteUser = async (req, res) => {
+    let id = req.body.id;
+    console.log('duong check id: ', id);
+    if(!id){
+        return res.status(400).json({
+            errCode: 1,
+            errMessage: 'Missing id parameter!'
+        })
+    }
+
+    let message = await userService.deleteUser(id);
+
+    return res.status(200).json({
+        message
+    })
+}
+
 module.exports = {
     handleLogin: handleLogin,
     handleGetAllUsers: handleGetAllUsers,
+    handleCreateNewUser: handleCreateNewUser,
+    handleEditUser: handleEditUser,
+    handleDeleteUser: handleDeleteUser
 }

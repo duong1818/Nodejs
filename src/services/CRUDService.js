@@ -78,13 +78,18 @@ let updateUserData = (data) => {
                 where: {id: data.id} 
             });
             if(user){
-                user.firstName = data.firstName;
-                user.lastName = data.lastName;
-                user.phoneNumber = data.phoneNumber;
-                user.address = data.address;
-                user.gender = data.gender === '1' ? true : false;
-                user.roleId = data.roleId;
-                await user.save();
+                await db.User.update(
+                    { 
+                        email: data.email,
+                        firstName: data.firstName,
+                        lastName: data.lastName,
+                        phoneNumber: data.phoneNumber,
+                        address: data.address,
+                        gender: data.gender === '1' ? true : false,
+                        roleId: data.roleId
+                    },
+                    {where: {id: data.id}}
+                );
 
                 let allUsers = await db.User.findAll({
                     raw: true
@@ -108,7 +113,9 @@ let deleteUser = (userId) =>{
                 where: {id: userId}
             })
             if(user){
-                await user.destroy();
+                await db.User.destroy({
+                    where:{id: userId}
+                })
                 let allUsers = await db.User.findAll({
                     raw: true
                 });
