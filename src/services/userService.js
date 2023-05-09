@@ -93,30 +93,32 @@ let createNewUser = (user) => {
                     errCode: 2,
                     errMessage: 'Email already exists! please try another email!'    
                 })
+            }else{
+                let hashPasswordFromBcrypt = await hashUserPassword(user.password);
+                await db.User.create({
+                    email: user.email,
+                    password: hashPasswordFromBcrypt,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    address: user.address,
+                    phoneNumber: user.phoneNumber,
+                    gender: user.gender === '1' ? true : false,
+                    roleId: user.roleId,
+                })
+    
+                // let users = await db.User.findAll({
+                //     attributes:{
+                //         exclude: ['password'],
+                //     },
+                // });
+                //console.log('users : ',users);
+                resolve({
+                    errCode: 0,
+                    errMessage: 'OK'
+                });
+    
+    
             }
-
-            let hashPasswordFromBcrypt = await hashUserPassword(user.password);
-            await db.User.create({
-                email: user.email,
-                password: hashPasswordFromBcrypt,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                address: user.address,
-                phoneNumber: user.phoneNumber,
-                gender: user.gender === '1' ? true : false,
-                roleId: user.roleId,
-            })
-
-            // let users = await db.User.findAll({
-            //     attributes:{
-            //         exclude: ['password'],
-            //     },
-            // });
-            //console.log('users : ',users);
-            resolve({
-                errCode: 0,
-                errMessage: 'OK'
-            });
 
 
         }catch(e){

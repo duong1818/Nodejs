@@ -64,7 +64,8 @@ let handleCreateNewUser = async (req, res) => {
     console.log('duong check message: ', message);
 
     return res.status(200).json({
-        message
+        errCode: message.errCode,
+        errMessage: message.errMessage
     })
 }
 
@@ -83,7 +84,8 @@ let handleEditUser = async (req, res) =>{
     let message = await userService.editUser(user);
 
     return res.status(200).json({
-        message        
+        errCode: message.errCode,
+        errMessage: message.errMessage
     })
 }
 
@@ -100,7 +102,8 @@ let handleDeleteUser = async (req, res) => {
     let message = await userService.deleteUser(id);
 
     return res.status(200).json({
-        message
+        errCode: message.errCode,
+        errMessage: message.errMessage
     })
 }
 
