@@ -142,13 +142,13 @@ let editUser = (data) => {
     return new Promise(async (resolve,reject) => {
         try{
             //check email is exist?
-            let isExistEmail = await checkUserEmail(data.email);
-            if(isExistEmail){
-                resolve({
-                    errCode: 2,
-                    errMessage: 'Email already exists! please try another email!'    
-                })
-            }
+            // let isExistEmail = await checkUserEmail(data.email);
+            // if(isExistEmail){
+            //     resolve({
+            //         errCode: 2,
+            //         errMessage: 'Email already exists! please try another email!'    
+            //     })
+            // }
             //let hashPasswordFromBcrypt = await hashUserPassword(user.password);
 
             let user = await db.User.findOne({
