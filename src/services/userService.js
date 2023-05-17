@@ -1,3 +1,4 @@
+import allcode from "../models/allcode";
 import db from "../models/index";
 import bcrypt from 'bcryptjs';
 const salt = bcrypt.genSaltSync(10);
@@ -218,10 +219,50 @@ let deleteUser = (userId) => {
     })
 }
 
+let getAllCodeService = (typeInput) => {
+    return new Promise ( async (resolve, reject) => {
+        try{
+
+            let res = {};
+
+            if(!typeInput){
+
+                res.errCode = 1;
+                res.errMessage = 'type input param is missing!'
+    
+            }else{
+                
+                let allcode = await db.AllCode.findAll({
+                    attributes:{
+                        exclude: ['createdAt','updatedAt'],
+                    },
+                    where: {type: typeInput}
+                });
+                console.log(allcode);
+
+                if(!allcode){
+                    res.errCode = 2;
+                    res.errMessage = 'allcode table data is not found!';
+    
+                }else{
+                    res.errCode = 0;
+                    res.data = allcode;    
+                }    
+            }
+
+            resolve(res);
+
+        }catch(e){
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     handleUserLogin: handleUserLogin,
     getAllUsers: getAllUsers,
     createNewUser: createNewUser,
     editUser: editUser,
-    deleteUser: deleteUser
+    deleteUser: deleteUser,
+    getAllCodeService: getAllCodeService
 }
