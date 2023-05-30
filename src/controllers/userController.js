@@ -72,7 +72,7 @@ let handleCreateNewUser = async (req, res) => {
 let handleEditUser = async (req, res) =>{
     let user = req.body;
 
-    console.log('duong check input user: ', user);
+    //console.log('duong check input user: ', user);
 
     if(!user){
         return res.status(400).json({
@@ -109,11 +109,19 @@ let handleDeleteUser = async (req, res) => {
 
 let handleGetAllCode = async (req, res) =>{
     try{
+
+        // setTimeout(async () => {
+        //     let type = req.query.type;
+        //     let data = await userService.getAllCodeService(type);
+    
+        //     return res.status(200).json(data);
+    
+        // },5000);
+
         let type = req.query.type;
         let data = await userService.getAllCodeService(type);
 
         return res.status(200).json(data);
-
 
     }catch(e){
         console.log('get allcode error: ',e);

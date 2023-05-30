@@ -15,8 +15,10 @@ let app = express();
 //app.use(cors({ origin: true}));
 //app.use(cors());
 app.use(cors({credentials: true, origin: process.env.URL_REACT}));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extends: true}));
+// app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({extends: true}));
+app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 
 viewEngine(app);
 initWebRoutes(app);

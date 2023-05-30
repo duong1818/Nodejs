@@ -1,5 +1,6 @@
 import allcode from "../models/allcode";
 import db from "../models/index";
+import User from "../models/user";
 import bcrypt from 'bcryptjs';
 const salt = bcrypt.genSaltSync(10);
 
@@ -40,7 +41,7 @@ let checkUserEmail = (userEmail) => {
         try{
             let user = await db.User.findOne({
                 // attributes: { 
-                //     //include: ['email','roleId'],
+                //     //include: ['email','role'],
                 //     exclude: ['password'],
                 // },
                 where: {email: userEmail},
@@ -103,8 +104,10 @@ let createNewUser = (user) => {
                     lastName: user.lastName,
                     address: user.address,
                     phoneNumber: user.phoneNumber,
-                    gender: user.gender === '1' ? true : false,
-                    roleId: user.roleId,
+                    gender: user.gender,
+                    role: user.role,
+                    position: user.position,
+                    image: user.image
                 })
     
                 // let users = await db.User.findAll({
@@ -112,7 +115,7 @@ let createNewUser = (user) => {
                 //         exclude: ['password'],
                 //     },
                 // });
-                //console.log('users : ',users);
+                //console.log('user : ',user);
                 resolve({
                     errCode: 0,
                     errMessage: 'OK'
@@ -152,9 +155,19 @@ let editUser = (data) => {
             // }
             //let hashPasswordFromBcrypt = await hashUserPassword(user.password);
 
+            if(!data.id || !data.gender || !data.role || !data.position){
+                resolve({
+                    errCode: 2,
+                    errMessage: 'Missing required parameters'
+                })
+            }
+
             let user = await db.User.findOne({
-                where: {id: data.id} 
+                where: {id: data.id},
+                raw: false // if want to use save() this setting is required
             });
+
+            //console.log('edit user : ', user);
 
             if(!user){
                 resolve({
@@ -164,18 +177,32 @@ let editUser = (data) => {
             }
 
             if(user){
-                await db.User.update(
-                    { 
-                        email: data.email,
-                        firstName: data.firstName,
-                        lastName: data.lastName,
-                        phoneNumber: data.phoneNumber,
-                        address: data.address,
-                        gender: data.gender === '1' ? true : false,
-                        roleId: data.roleId
-                    },
-                    {where: {id: data.id}}
-                );
+                user.firstName = data.firstName;
+                user.lastName = data.lastName;
+                user.phoneNumber = data.phoneNumber;
+                user.address = data.address;
+                user.gender = data.gender;
+                user.role = data.role;
+                user.position = data.position;
+                if(data.image){
+                    user.image = data.image;
+                }
+                await user.save();
+
+                // await db.User.update(
+                //     { 
+                //         //email: data.email,
+                //         firstName: data.firstName,
+                //         lastName: data.lastName,
+                //         phoneNumber: data.phoneNumber,
+                //         address: data.address,
+                //         gender: data.gender,
+                //         role: data.role,
+                //         position: data.position,
+                //         //image: data.image
+                //     },
+                //     {where: {id: data.id}}
+                // );
 
                 resolve({
                     errCode: 0,

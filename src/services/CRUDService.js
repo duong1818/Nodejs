@@ -14,8 +14,8 @@ let createNewUser = async (data) => {
                 address: data.address,
                 phoneNumber: data.phoneNumber,
                 gender: data.gender === '1' ? true : false,
-                roleId: data.roleId,
-                // positionId: data.positionId,
+                role: data.role,
+                // position: data.position,
                 // image: data.image
             })
 
@@ -86,7 +86,7 @@ let updateUserData = (data) => {
                         phoneNumber: data.phoneNumber,
                         address: data.address,
                         gender: data.gender === '1' ? true : false,
-                        roleId: data.roleId
+                        role: data.role
                     },
                     {where: {id: data.id}}
                 );
