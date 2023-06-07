@@ -2,6 +2,7 @@ import allcode from "../models/allcode";
 import db from "../models/index";
 import User from "../models/user";
 import bcrypt from 'bcryptjs';
+import { CommonUtils } from "../utils";
 const salt = bcrypt.genSaltSync(10);
 
 
@@ -67,6 +68,7 @@ let getAllUsers = (userId) => {
                     attributes:{
                         exclude: ['password'],
                     },
+                    raw: true
                 })
             }
             if (userId && userId !== 'ALL'){
@@ -75,9 +77,19 @@ let getAllUsers = (userId) => {
                         exclude: ['password'],
                     },
                     where: {id: userId},
+                    raw: true,
                 })
             }
-            //console.log('users : ',users);
+
+            if(users && users.length > 0){
+                users.map((item, index) => {
+                    if(item && item.image){
+                        item.image = CommonUtils.getUrlFromBase64(item.image);
+                    }
+                })
+            }
+
+            console.log('users : ',users);
             resolve(users)
 
         }catch(e){
@@ -263,9 +275,15 @@ let getAllCodeService = (typeInput) => {
                     attributes:{
                         exclude: ['createdAt','updatedAt'],
                     },
-                    where: {type: typeInput}
+                    where: {type: typeInput},
+                    // include: [
+                    //     { model: db.User, as:'genderData', attributes: ['email','firstName']},
+                    // ],
+                    raw: true,
+                    nest: true
+
                 });
-                console.log(allcode);
+                //console.log(allcode);
 
                 if(!allcode){
                     res.errCode = 2;
