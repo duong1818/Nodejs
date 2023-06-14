@@ -134,6 +134,52 @@ let getInforDoctor = async (req, res) => {
     }
 }
 
+let bulkCreateSchedule = async (req, res) => {
+
+    try{
+        let response = await doctorService.bulkCreateSchedule(req.body);
+
+        return res.status(200).json({
+            errCode: response.errCode,
+            errMessage: response.errMessage
+        })
+
+
+    }catch(e){
+        console.log(e);
+        res.status(200).json({
+            errCode: -1,
+            errMessage: "Error from server..."
+        })
+
+    }
+}
+
+let getScheduleDoctorByDate = async (req, res) => {
+
+    try {
+        if(!req.query.date && !req.query.doctorId){
+            res.status(200).json({
+                errCode: 1,
+                errMessage: "Missing required parameter!"
+            });
+        }
+
+        let response = await doctorService.getScheduleDoctorByDate(req.query.doctorId, req.query.date);
+
+        return res.status(200).json({
+            errCode: response.errCode,
+            errMessage: response.errMessage,
+            schedules: response.schedules
+        });
+    }catch(e){
+        console.log(e);
+        res.status(200).json({
+            errCode: -1,
+            errMessage: "Error from server..."
+        });
+    }
+}
 
 module.exports = {
     getTopDoctorHome : getTopDoctorHome,
@@ -141,4 +187,6 @@ module.exports = {
     createInforDoctor : createInforDoctor,
     getInforDoctor: getInforDoctor,
     editInforDoctor: editInforDoctor,
+    bulkCreateSchedule,
+    getScheduleDoctorByDate
 }

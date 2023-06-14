@@ -1,6 +1,11 @@
 
 import db from "../models/index";
-import {CommonUtils, ROLE} from "../utils/";
+import {CommonUtils, ROLE, DATE_FORMAT} from "../utils/";
+require('dotenv').config();
+import _ from "lodash";
+import moment from "moment";
+
+const MAX_NUMBER_SCHEDULE = process.env.MAX_NUMBER_SCHEDULE;
 
 let getTopDoctorHome = (limit) => {
     return new Promise( async (resolve, reject) => {
@@ -172,10 +177,110 @@ let getInforDoctor = (doctorId) => {
     })
 }
 
+let bulkCreateSchedule = (data) => {
+    return new Promise( async (resolve, reject) => {
+        try{
+            //console.log('check data:' , typeof data ,data);
+
+            if(!data || _.isEmpty(data)){
+                resolve({
+                    errCode: 1,
+                    errMessage: "Missing input data!"
+                })
+            }else{
+                if(data && data.length > 0){
+                    let schedules = data.map( item => {
+                        item.maxNumber = +MAX_NUMBER_SCHEDULE;
+                        item.doctorId = item.doctorId;
+                        item.date = item.date;
+                        item.timeKey = item.timeKey;
+                        return item;
+                    })
+
+                    let existingSchedule = await db.Schedule.findAll({
+                        attributes: ['doctorId', 'date', 'timeKey', 'maxNumber'],
+                        where: {
+                            doctorId: schedules[0].doctorId,
+                            date: schedules[0].date
+                        }
+                    });
+
+                    // if(existingSchedule && existingSchedule.length > 0){
+                    //     existingSchedule = existingSchedule.map(item => {
+                    //         item.date = item.date.getTime();
+                    //         return item;
+                    //     });
+                    // }
+
+                    // console.log('existingSchedule : ', existingSchedule);
+                    // console.log('schedules : ', schedules);
+
+                    let toCreate = _.differenceWith(schedules, existingSchedule, (a,b) => {
+                        return a.timeKey === b.timeKey && a.date === b.date.getTime();
+                    });
+
+                    // console.log('toCrete : ',toCreate);
+
+                    if(toCreate && toCreate.length > 0) {
+                        await db.Schedule.bulkCreate(toCreate);                    
+                    }
+
+                }
+            }
+
+            resolve({
+                errCode: 0,
+                errMessage: "Create bulk schedule is OK!"
+            });
+            
+        }catch(e){
+            reject(e);
+        }
+    })
+}
+
+let getScheduleDoctorByDate = (doctorId, date) =>{
+    return new Promise(async (resolve, reject) =>{
+
+        try{
+
+            // console.log("date : " + date);
+            // let _date = moment.unix(date).format(DATE_FORMAT.SEND_TO_DB);
+            // console.log("date : " + _date);
+
+            let schedules = await db.Schedule.findAll({
+                
+                attributes:['doctorId','date','timeKey'],
+                where:{
+                    doctorId: doctorId,
+                    date: moment.unix(date).format(DATE_FORMAT.SEND_TO_DB)
+                },
+                include: [
+                    { model: db.AllCode, as: 'timeData', attributes: ['valueEn','valueVi']}
+                ],
+                raw: true,
+                nest: true
+            })
+
+            resolve({
+                errCode: 0,
+                errMessage: 'get schedule OK!',
+                schedules
+            })
+
+
+        }catch(e){
+           reject(e); 
+        }
+    })
+}
+
 module.exports = {
     getTopDoctorHome: getTopDoctorHome,
     getAllDoctors: getAllDoctors,
     createInforDoctor: createInforDoctor,
     getInforDoctor: getInforDoctor,
     editInforDoctor: editInforDoctor,
+    bulkCreateSchedule,
+    getScheduleDoctorByDate
 }
