@@ -55,6 +55,7 @@ let getAllDoctors = () => {
                 },
                 include: [
                     { model: db.Markdown, as: 'doctorInformation', attributes: ['doctorId','contentHTML','contentMarkdown','description']},
+                    { model: db.Doctor_infor, as: 'doctorInforMore', attributes: ['doctorId','priceKey','paymentKey','provinceKey','nameClinic','addressClinic','note']},
                 ],
                 raw: true,
                 nest: true
@@ -74,16 +75,26 @@ let getAllDoctors = () => {
 }
 
 
-let createInforDoctor = (data) => {
+let createInforDoctor = (doctorInfo) => {
     return new Promise(async (resolve, reject) => {
         try{
 
-            console.log('data: ',data, db.Markdown);
+            console.log('doctorInfo: ',doctorInfo, db.Markdown);
             await db.Markdown.create({
-                doctorId: data.doctorId,
-                contentHTML: data.contentHTML,
-                contentMarkdown: data.contentMarkdown,
-                description: data.description
+                doctorId: doctorInfo.doctorId,
+                contentHTML: doctorInfo.contentHTML,
+                contentMarkdown: doctorInfo.contentMarkdown,
+                description: doctorInfo.description
+            })
+
+            await db.Doctor_infor.create({
+                doctorId: doctorInfo.doctorId,
+                priceKey: doctorInfo.priceKey,
+                paymentKey: doctorInfo.paymentKey,
+                provinceKey: doctorInfo.provinceKey,
+                nameClinic: doctorInfo.nameClinic,
+                addressClinic: doctorInfo.addressClinic,
+                note: doctorInfo.note
             })
 
             resolve({
@@ -93,19 +104,20 @@ let createInforDoctor = (data) => {
 
 
         }catch(e){
+            console.log(e);
             reject(e);
         }
     })
 }
 
-let editInforDoctor = (doctor) => {
+let editInforDoctor = (doctorInfo) => {
     return new Promise(async (resolve, reject) => {
         try {
 
-            console.log('doctorId : ', doctor.doctorId);
+            console.log('doctorInfo : ', doctorInfo);
 
             let oldDoctor = await db.Markdown.findOne({
-                where: {doctorId: doctor.doctorId},
+                where: {doctorId: doctorInfo.doctorId},
                 raw: false
             })
 
@@ -117,11 +129,43 @@ let editInforDoctor = (doctor) => {
             }
 
             if(oldDoctor){
-                oldDoctor.contentHTML = doctor.contentHTML;
-                oldDoctor.contentMarkdown = doctor.contentMarkdown; 
-                oldDoctor.description = doctor.description;
+                oldDoctor.contentHTML = doctorInfo.contentHTML;
+                oldDoctor.contentMarkdown = doctorInfo.contentMarkdown; 
+                oldDoctor.description = doctorInfo.description;
+                await oldDoctor.save();
             }
-            await oldDoctor.save();
+
+            let oldDoctorInfor = await db.Doctor_infor.findOne({
+                where: {doctorId: doctorInfo.doctorId},
+                raw: false
+            })
+
+            if(!oldDoctorInfor) {
+                await db.Doctor_infor.create({
+                    doctorId: doctorInfo.doctorId,
+                    priceKey: doctorInfo.priceKey,
+                    paymentKey: doctorInfo.paymentKey,
+                    provinceKey: doctorInfo.provinceKey,
+                    nameClinic: doctorInfo.nameClinic,
+                    addressClinic: doctorInfo.addressClinic,
+                    note: doctorInfo.note
+                })
+
+                // resolve({
+                //     errCode: 2,
+                //     errMessage: 'doctor not found!'
+                // })                
+            }
+            if(oldDoctorInfor){
+                oldDoctorInfor.priceKey = doctorInfo.priceKey;
+                oldDoctorInfor.paymentKey = doctorInfo.paymentKey; 
+                oldDoctorInfor.provinceKey = doctorInfo.provinceKey;
+                oldDoctorInfor.nameClinic = doctorInfo.nameClinic;
+                oldDoctorInfor.addressClinic = doctorInfo.addressClinic;
+                oldDoctorInfor.note = doctorInfo.note;
+                await oldDoctorInfor.save();
+            }
+
 
             resolve({
                 errCode: 0,
@@ -156,9 +200,17 @@ let getInforDoctor = (doctorId) => {
                 },
                 include: [
                     { model: db.Markdown, as: 'doctorInformation', attributes: ['contentHTML','contentMarkdown','description']},
-                    { model: db.AllCode, as: 'positionData', attributes: ['valueEn','valueVi']}
+                    { model: db.AllCode, as: 'positionData', attributes: ['valueEn','valueVi']},
+                    { model: db.Doctor_infor, as: 'doctorInforMore', 
+                        attributes: ['nameClinic','addressClinic','note','count'],
+                        include: [ 
+                            {model: db.AllCode, as: 'priceData', attributes: ['valueEn','valueVi']},
+                            {model: db.AllCode, as: 'paymentData', attributes: ['valueEn','valueVi']},
+                            {model: db.AllCode, as: 'provinceData', attributes: ['valueEn','valueVi']}
+                        ]
+                    },
                 ],
-                raw: true,
+                raw: false,
                 nest: true
             })
 
@@ -170,6 +222,46 @@ let getInforDoctor = (doctorId) => {
                 errCode: 0,
                 errMessage: 'get InforDoctor scceeded',
                 inforDoctor: inforDoctor? inforDoctor : {}
+            })
+        }catch(e) {
+            reject(e);
+        }
+    })
+}
+
+let getInforDoctorExtra = (doctorId) => {
+    return new Promise(async (resolve, reject) => {
+
+        try{
+
+            if(!doctorId){
+                resolve({
+                    errCode: -2,
+                    errMessage: 'Invalid input parameter!',
+                })
+            }
+            console.log('doctorId: ',doctorId);
+
+            let inforDoctorExtra = await db.Doctor_infor.findOne({
+                attributes: {
+                    exclude: ['id', 'doctorId', 'createdAt', 'updatedAt'],
+                },
+                where:{
+                    doctorId: doctorId
+                },
+                include: [
+                    {model: db.AllCode, as: 'priceData', attributes: ['valueEn','valueVi']},
+                    {model: db.AllCode, as: 'paymentData', attributes: ['valueEn','valueVi']},
+                    {model: db.AllCode, as: 'provinceData', attributes: ['valueEn','valueVi']}
+                ],
+                raw: false,
+                nest: true
+            })
+
+            resolve({
+                errCode: 0,
+                errMessage: 'get InforDoctor Extra scceeded',
+                inforDoctorExtra: inforDoctorExtra? inforDoctorExtra : {}
             })
         }catch(e) {
             reject(e);
@@ -282,5 +374,6 @@ module.exports = {
     getInforDoctor: getInforDoctor,
     editInforDoctor: editInforDoctor,
     bulkCreateSchedule,
-    getScheduleDoctorByDate
+    getScheduleDoctorByDate,
+    getInforDoctorExtra
 }

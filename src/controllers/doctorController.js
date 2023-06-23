@@ -9,7 +9,7 @@ let getTopDoctorHome = async (req, res) => {
     try{
         let response = await doctorService.getTopDoctorHome(+limit);
 
-        console.log("response: ", response);
+        //console.log("response: ", response);
 
         return res.status(200).json({
             errCode: response.errCode,
@@ -31,7 +31,7 @@ let getAllDoctors = async (req, res) => {
     try{
 
         let response = await doctorService.getAllDoctors();
-        console.log("response: ", response);
+        //console.log("response: ", response);
 
         return res.status(200).json({
             errCode: response.errCode,
@@ -84,16 +84,16 @@ let createInforDoctor = async (req, res) => {
 let editInforDoctor = async (req, res) => {
 
     try{
-        let doctor = req.body;
+        let doctorInfo = req.body;
 
-        if(!doctor || !doctor.doctorId || !doctor.contentHTML || !doctor.contentMarkdown){
+        if(!doctorInfo || !doctorInfo.doctorId || !doctorInfo.contentHTML || !doctorInfo.contentMarkdown){
 
             return res.status(200).json({
                 errCode: 1,
                 errMessage: "Missing input doctor information!"
             })
         }
-        let response = await doctorService.editInforDoctor(doctor);
+        let response = await doctorService.editInforDoctor(doctorInfo);
 
         return res.status(200).json({
             errCode: response.errCode,
@@ -115,7 +115,7 @@ let getInforDoctor = async (req, res) => {
 
     try{
 
-        let doctorId = req.query.id;
+        let doctorId = req.query.doctorId;
 
         let response = await doctorService.getInforDoctor(doctorId);
 
@@ -123,6 +123,29 @@ let getInforDoctor = async (req, res) => {
             errCode: response.errCode,
             errMessage: response.errMessage,
             inforDoctor: response.inforDoctor
+        })
+
+    }catch(e){
+        console.log(e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: "Error from server..."
+        })
+    }
+}
+
+let getInforDoctorExtra = async (req, res) => {
+
+    try{
+
+        let doctorId = req.query.doctorId;
+
+        let response = await doctorService.getInforDoctorExtra(doctorId);
+
+        return res.status(200).json({
+            errCode: response.errCode,
+            errMessage: response.errMessage,
+            inforDoctorExtra: response.inforDoctorExtra
         })
 
     }catch(e){
@@ -158,7 +181,7 @@ let bulkCreateSchedule = async (req, res) => {
 let getScheduleDoctorByDate = async (req, res) => {
 
     try {
-        if(!req.query.date && !req.query.doctorId){
+        if(!req.query.date || !req.query.doctorId){
             res.status(200).json({
                 errCode: 1,
                 errMessage: "Missing required parameter!"
@@ -181,6 +204,8 @@ let getScheduleDoctorByDate = async (req, res) => {
     }
 }
 
+
+
 module.exports = {
     getTopDoctorHome : getTopDoctorHome,
     getAllDoctors : getAllDoctors,
@@ -188,5 +213,6 @@ module.exports = {
     getInforDoctor: getInforDoctor,
     editInforDoctor: editInforDoctor,
     bulkCreateSchedule,
-    getScheduleDoctorByDate
+    getScheduleDoctorByDate,
+    getInforDoctorExtra
 }
