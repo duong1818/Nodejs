@@ -22,7 +22,10 @@
     "express": "^4.17.1",
     "lodash": "^4.17.21",
     "mysql2": "^2.2.5",
-    "sequelize": "^6.6.2"
+    "nodemailer": "6.6.3",
+    "openai": "^3.3.0",
+    "sequelize": "^6.6.2",
+    "uuid": "8.3.2"
   },
   "devDependencies": {
     "@babel/cli": "^7.21.5",

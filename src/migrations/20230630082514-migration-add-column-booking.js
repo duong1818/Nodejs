@@ -10,7 +10,9 @@ module.exports = {
      */
     return queryInterface.sequelize.transaction(t => {
       return Promise.all([
-        queryInterface.renameColumn('Bookings', 'timeType', 'timeKey')
+        queryInterface.addColumn('Bookings', 'token', {
+          type: Sequelize.STRING
+        })
       ]);
     });
   },
@@ -22,9 +24,8 @@ module.exports = {
      * Example:
      * await queryInterface.dropTable('users');
      */
-    return queryInterface.sequelize.transaction(t => {
-      return Promise.all([
-        queryInterface.renameColumn('Bookings', 'timeKey', 'timeType')
-      ]);
+    return Promise.all([
+      queryInterface.removeColumn('Bookings', 'token')
+    ]);
   }
 };

@@ -204,6 +204,36 @@ let getScheduleDoctorByDate = async (req, res) => {
     }
 }
 
+let getInforDoctorForBooking = async (req, res) => {
+    try {
+
+        if(!req.query.doctorId){
+            res.status(200).json({
+                errCode: 1,
+                errMessage: "Missing doctorId parameter!"
+            });
+        }
+
+        let response = await doctorService.getInforDoctorForBooking(req.query.doctorId);
+
+        return res.status(200).json({
+            errCode: response.errCode,
+            errMessage: response.errMessage,
+            dataBooking: response.dataBooking
+        });
+
+
+    }catch (e) {
+        console.log(e);
+        res.status(200).json({
+            errCode: -1,
+            errMessage: "Error from server..."
+        })
+
+    }
+
+}
+
 
 
 module.exports = {
@@ -214,5 +244,6 @@ module.exports = {
     editInforDoctor: editInforDoctor,
     bulkCreateSchedule,
     getScheduleDoctorByDate,
-    getInforDoctorExtra
+    getInforDoctorExtra,
+    getInforDoctorForBooking
 }

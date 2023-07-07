@@ -10,7 +10,9 @@ module.exports = {
      */
     return queryInterface.sequelize.transaction(t => {
       return Promise.all([
-        queryInterface.renameColumn('Bookings', 'timeType', 'timeKey')
+        queryInterface.changeColumn('Specialties', 'image', {type: Sequelize.BLOB('long'), allowNull: true}, { transaction: t }),
+        queryInterface.renameColumn('Specialties', 'description', 'descriptionHTML'),
+        queryInterface.addColumn('Specialties', 'descriptionMarkdown', {type: Sequelize.TEXT})
       ]);
     });
   },
@@ -24,7 +26,10 @@ module.exports = {
      */
     return queryInterface.sequelize.transaction(t => {
       return Promise.all([
-        queryInterface.renameColumn('Bookings', 'timeKey', 'timeType')
+        queryInterface.changeColumn('Specialties', 'image', {type: Sequelize.STRING, allowNull: true}, { transaction: t }),
+        queryInterface.renameColumn('Specialties', 'descriptionHTML', 'description'),
+        queryInterface.removeColumn('Specialties', 'descriptionMarkdown')
       ]);
+    });
   }
 };

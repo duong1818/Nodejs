@@ -367,6 +367,51 @@ let getScheduleDoctorByDate = (doctorId, date) =>{
     })
 }
 
+let getInforDoctorForBooking = (doctorId) => {
+    return new Promise( async (resolve, reject) => {
+
+        try {
+
+                let dataBooking = await db.User.findOne({
+                attributes: {
+                    exclude: ['password','id','createdAt','updatedAt']
+                },
+                where:{
+                    id: doctorId
+                },
+                include: [
+                    { model: db.AllCode, as: 'positionData', attributes: ['valueEn','valueVi']},
+                    { model: db.Doctor_infor, as: 'doctorInforMore', 
+                        attributes: {
+                            exclude: ['id','doctorId','createdAt','updatedAt']
+                        },
+                        include: [ 
+                            {model: db.AllCode, as: 'priceData', attributes: ['valueEn','valueVi']},
+                            {model: db.AllCode, as: 'paymentData', attributes: ['valueEn','valueVi']},
+                        ]
+                    },
+                ],
+                raw: false,
+                nest: true
+            })
+
+            if( dataBooking && dataBooking.image ) {
+                dataBooking.image = CommonUtils.getUrlFromBase64(dataBooking.image);
+            }
+
+            resolve({
+                errCode: 0,
+                errMessage: 'get InforDoctor scceeded',
+                dataBooking: dataBooking? dataBooking : {}
+            })
+
+        }catch (e) {
+            reject(e);
+
+        }
+    })
+}
+
 module.exports = {
     getTopDoctorHome: getTopDoctorHome,
     getAllDoctors: getAllDoctors,
@@ -375,5 +420,6 @@ module.exports = {
     editInforDoctor: editInforDoctor,
     bulkCreateSchedule,
     getScheduleDoctorByDate,
-    getInforDoctorExtra
+    getInforDoctorExtra,
+    getInforDoctorForBooking
 }
